@@ -1,0 +1,10 @@
+[Unit]
+Description=每 24 小时全量同步一次
+
+[Timer]
+OnCalendar=*-*-* 04:17:00
+Persistent=true
+RandomizedDelaySec=600
+
+[Install]
+WantedBy=timers.target

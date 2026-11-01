@@ -1,0 +1,11 @@
+[Unit]
+Description=每 30 分钟快速探测（有新版本立刻拉，缩短提示过期时间）
+
+[Timer]
+Unit=repomods-sync.service
+OnBootSec=3min
+OnUnitActiveSec=30min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

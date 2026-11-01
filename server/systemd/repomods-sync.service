@@ -1,0 +1,12 @@
+[Unit]
+Description=RepoModHelper 云端镜像同步（游戏/mod 版本检测 + 拉取）
+After=network-online.target nginx.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/repomods/sync.py
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+TimeoutStartSec=1800
