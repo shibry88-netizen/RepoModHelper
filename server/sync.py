@@ -37,12 +37,30 @@ UA = "RepoModHelper-Sync/1.0 (+https://github.com/shibry88-netizen/RepoModHelper
 
 # key 与安装器里的 ModPackage 一一对应
 PACKAGES = [
-    {"key": "BepInExPack",         "ns": "BepInEx",          "name": "BepInExPack"},
-    {"key": "REPOLib",             "ns": "Zehs",             "name": "REPOLib"},
-    {"key": "WeaponSpawner",       "ns": "BusiTeam",         "name": "WeaponSpawner"},
-    {"key": "REPOFidelity",        "ns": "Vippy",            "name": "REPOFidelity"},
-    {"key": "ClearUI",             "ns": "soundedsquash",    "name": "Clear_UI"},
-    {"key": "ChineseTranslation",  "ns": "toored",           "name": "Chinese_Translation"},
+    # --- 前置框架 / 库 ---
+    {"key": "BepInExPack",           "ns": "BepInEx",          "name": "BepInExPack"},
+    {"key": "REPOLib",               "ns": "Zehs",             "name": "REPOLib"},
+    {"key": "MenuLib",               "ns": "REPOModding",      "name": "MenuLib"},
+    {"key": "REPOConfig",            "ns": "REPOModding",      "name": "REPOConfig"},
+    {"key": "ScalerCore",            "ns": "Vippy",            "name": "ScalerCore"},
+    # --- 刷物品 / 玩法 ---
+    {"key": "WeaponSpawner",         "ns": "BusiTeam",         "name": "WeaponSpawner"},
+    {"key": "NoItemSpawnLimit",      "ns": "HeroHanex",        "name": "NoItemSpawnLimit"},
+    {"key": "EnemyAndValuableSpawn", "ns": "soundedsquash",    "name": "Enemy_And_Valuable_Spawn_Manager"},
+    {"key": "UpgradeEveryRound",     "ns": "SLR",              "name": "UpgradeEveryRoundUpdated"},
+    {"key": "SharedUpgradesPlus",    "ns": "Vippy",            "name": "SharedUpgradesPlus"},
+    {"key": "ShrinkCart",            "ns": "AngelcoMilk",      "name": "ShrinkCart"},
+    # --- 联机体验 ---
+    {"key": "MorePlayersSimple",     "ns": "cn_xc",            "name": "MorePlayersSimple", "mirror": False},
+    {"key": "Ping_It",               "ns": "Eberk",            "name": "Ping_It"},
+    {"key": "ReviveAll",             "ns": "R_E_P_O_NOOB",     "name": "ReviveAll"},
+    {"key": "MapVotePlusPlus",       "ns": "RoryDotGG",        "name": "MapVotePlusPlus"},
+    # --- 画面 / 稳定性 / 汉化 ---
+    {"key": "REPOCompatibilityPatch","ns": "DEADTROL",         "name": "REPO_Compatibility_Patch"},
+    {"key": "REPOFidelity",          "ns": "Vippy",            "name": "REPOFidelity"},
+    {"key": "ClearUI",               "ns": "soundedsquash",    "name": "Clear_UI"},
+    {"key": "REPOFontChanger",       "ns": "ramune1256",       "name": "REPO_FontChanger"},
+    {"key": "ChineseTranslation",    "ns": "toored",           "name": "Chinese_Translation"},
 ]
 
 # ---------------- 工具 ----------------
@@ -240,6 +258,21 @@ def main():
                     packages.append(old)  # 查不到源站就沿用旧记录
                 continue
             try:
+                if pkg.get("mirror") is False:
+                    # 作者限制二次分发：只记录源站地址，不落到本地镜像
+                    log("  跳过镜像（作者限制分发）：%s" % pkg["key"])
+                    packages.append({
+                        "key": pkg["key"],
+                        "version": info["version"],
+                        "file": "",
+                        "url": info["download_url"],
+                        "size": 0,
+                        "sha256": "",
+                        "source": info["download_url"],
+                        "mirrored": False,
+                        "updated_at": info.get("date", ""),
+                    })
+                    continue
                 path = download_package(pkg, info["version"], info["download_url"])
                 packages.append({
                     "key": pkg["key"],

@@ -126,7 +126,7 @@ namespace RepoInstaller
                 BorderStyle = BorderStyle.FixedSingle,
                 IntegralHeight = false
             };
-            foreach (var p in Core.Packages) _clb.Items.Add(p, true);
+            foreach (var p in Core.Packages) _clb.Items.Add(p, !p.DefaultOff);   // 作者限制分发的包默认不勾
             _clb.ItemCheck += (s, e) =>
             {
                 if (_clb.Items[e.Index] is ModPackage p && p.Required && e.NewValue == CheckState.Unchecked)

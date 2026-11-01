@@ -47,6 +47,8 @@ namespace RepoInstaller
         public string StripPrefix;
         public string Folder;
         public bool Required;
+        public bool DirectOnly;   // 只从源站下载，不进云端镜像（作者授权限制）
+        public bool DefaultOff;   // 列表里默认不勾选
         public override string ToString() => Name;
     }
 
@@ -55,43 +57,128 @@ namespace RepoInstaller
         public const string RepoDir = "REPO.exe";
 
         public static readonly ModPackage[] Packages = new[]
-        {
-            new ModPackage {
-                Name = "BepInExPack 5.4.2305  ← 前置框架（必装）", Key = "BepInExPack", Ns = "BepInEx", TsName = "BepInExPack", MatchKey = "BepInExPack",
-                Url = "https://thunderstore.io/package/download/BepInEx/BepInExPack/5.4.2305/",
-                AltUrl = "https://old.thunderstore.io/package/download/BepInEx/BepInExPack/5.4.2305/",
-                FileName = "BepInEx-BepInExPack-5.4.2305.zip", Mode = 0, StripPrefix = "BepInExPack/", Required = true },
-
-            new ModPackage {
-                Name = "REPOLib 4.3.0  ← 依赖库", Key = "REPOLib", Ns = "Zehs", TsName = "REPOLib", MatchKey = "REPOLib",
-                Url = "https://thunderstore.io/package/download/Zehs/REPOLib/4.3.0/",
-                AltUrl = "https://old.thunderstore.io/package/download/Zehs/REPOLib/4.3.0/",
-                FileName = "Zehs-REPOLib-4.3.0.zip", Mode = 1, StripPrefix = "plugins/", Folder = "REPOLib" },
-
-            new ModPackage {
-                Name = "WeaponSpawner 1.4.1  ← 刷物品（F6）", Key = "WeaponSpawner", Ns = "BusiTeam", TsName = "WeaponSpawner", MatchKey = "WeaponSpawner",
-                Url = "https://thunderstore.io/package/download/BusiTeam/WeaponSpawner/1.4.1/",
-                AltUrl = "https://old.thunderstore.io/package/download/BusiTeam/WeaponSpawner/1.4.1/",
-                FileName = "BusiTeam-WeaponSpawner-1.4.1.zip", Mode = 1, StripPrefix = "", Folder = "WeaponSpawner" },
-
-            new ModPackage {
-                Name = "REPOFidelity 1.8.2  ← 高清画面（约 156 MB）", Key = "REPOFidelity", Ns = "Vippy", TsName = "REPOFidelity", MatchKey = "REPOFidelity",
-                Url = "https://thunderstore.io/package/download/Vippy/REPOFidelity/1.8.2/",
-                AltUrl = "https://old.thunderstore.io/package/download/Vippy/REPOFidelity/1.8.2/",
-                FileName = "Vippy-REPOFidelity-1.8.2.zip", Mode = 1, StripPrefix = "", Folder = "REPOFidelity" },
-
-            new ModPackage {
-                Name = "Clear UI 0.2.1  ← 高清界面", Key = "ClearUI", Ns = "soundedsquash", TsName = "Clear_UI", MatchKey = "ClearUI",
-                Url = "https://thunderstore.io/package/download/soundedsquash/Clear_UI/0.2.1/",
-                AltUrl = "https://old.thunderstore.io/package/download/soundedsquash/Clear_UI/0.2.1/",
-                FileName = "soundedsquash-Clear_UI-0.2.1.zip", Mode = 1, StripPrefix = "", Folder = "ClearUI" },
-
-            new ModPackage {
-                Name = "Chinese Translation 0.5.1  ← 模组汉化", Key = "ChineseTranslation", Ns = "toored", TsName = "Chinese_Translation", MatchKey = "Chinese_Translation",
-                Url = "https://thunderstore.io/package/download/toored/Chinese_Translation/0.5.1/",
-                AltUrl = "https://old.thunderstore.io/package/download/toored/Chinese_Translation/0.5.1/",
-                FileName = "toored-Chinese_Translation-0.5.1.zip", Mode = 0, StripPrefix = "" },
-        };
+                {
+                    new ModPackage {
+                        Name = "BepInExPack 5.4.2305  ← 前置框架（必装）", Key = "BepInExPack", Ns = "BepInEx", TsName = "BepInExPack", MatchKey = "BepInExPack",
+                        Url = "https://thunderstore.io/package/download/BepInEx/BepInExPack/5.4.2305/",
+                        AltUrl = "https://old.thunderstore.io/package/download/BepInEx/BepInExPack/5.4.2305/",
+                        FileName = "BepInEx-BepInExPack-5.4.2305.zip", Mode = 0, StripPrefix = "BepInExPack/", Folder = null,
+                        Required = true, DirectOnly = false, DefaultOff = false },
+                    new ModPackage {
+                        Name = "REPOLib 4.3.0  ← 依赖库", Key = "REPOLib", Ns = "Zehs", TsName = "REPOLib", MatchKey = "REPOLib",
+                        Url = "https://thunderstore.io/package/download/Zehs/REPOLib/4.3.0/",
+                        AltUrl = "https://old.thunderstore.io/package/download/Zehs/REPOLib/4.3.0/",
+                        FileName = "Zehs-REPOLib-4.3.0.zip", Mode = 1, StripPrefix = "plugins/", Folder = "REPOLib",
+                        Required = false, DirectOnly = false, DefaultOff = false },
+                    new ModPackage {
+                        Name = "MenuLib 2.6.0  ← 菜单库（多个 mod 依赖）", Key = "MenuLib", Ns = "REPOModding", TsName = "MenuLib", MatchKey = "MenuLib",
+                        Url = "https://thunderstore.io/package/download/REPOModding/MenuLib/2.6.0/",
+                        AltUrl = "https://old.thunderstore.io/package/download/REPOModding/MenuLib/2.6.0/",
+                        FileName = "REPOModding-MenuLib-2.6.0.zip", Mode = 1, StripPrefix = "", Folder = "MenuLib",
+                        Required = false, DirectOnly = false, DefaultOff = false },
+                    new ModPackage {
+                        Name = "REPOConfig 1.2.7  ← 游戏内 mod 设置界面", Key = "REPOConfig", Ns = "REPOModding", TsName = "REPOConfig", MatchKey = "REPOConfig",
+                        Url = "https://thunderstore.io/package/download/REPOModding/REPOConfig/1.2.7/",
+                        AltUrl = "https://old.thunderstore.io/package/download/REPOModding/REPOConfig/1.2.7/",
+                        FileName = "REPOModding-REPOConfig-1.2.7.zip", Mode = 1, StripPrefix = "", Folder = "REPOConfig",
+                        Required = false, DirectOnly = false, DefaultOff = false },
+                    new ModPackage {
+                        Name = "ScalerCore 1.1.1  ← 缩放库（ShrinkCart 依赖）", Key = "ScalerCore", Ns = "Vippy", TsName = "ScalerCore", MatchKey = "ScalerCore",
+                        Url = "https://thunderstore.io/package/download/Vippy/ScalerCore/1.1.1/",
+                        AltUrl = "https://old.thunderstore.io/package/download/Vippy/ScalerCore/1.1.1/",
+                        FileName = "Vippy-ScalerCore-1.1.1.zip", Mode = 1, StripPrefix = "", Folder = "ScalerCore",
+                        Required = false, DirectOnly = false, DefaultOff = false },
+                    new ModPackage {
+                        Name = "WeaponSpawner 1.4.1  ← 刷物品（F6）", Key = "WeaponSpawner", Ns = "BusiTeam", TsName = "WeaponSpawner", MatchKey = "WeaponSpawner",
+                        Url = "https://thunderstore.io/package/download/BusiTeam/WeaponSpawner/1.4.1/",
+                        AltUrl = "https://old.thunderstore.io/package/download/BusiTeam/WeaponSpawner/1.4.1/",
+                        FileName = "BusiTeam-WeaponSpawner-1.4.1.zip", Mode = 1, StripPrefix = "", Folder = "WeaponSpawner",
+                        Required = false, DirectOnly = false, DefaultOff = false },
+                    new ModPackage {
+                        Name = "NoItemSpawnLimit 1.0.9  ← 解除卡车物品上限", Key = "NoItemSpawnLimit", Ns = "HeroHanex", TsName = "NoItemSpawnLimit", MatchKey = "NoItemSpawnLimit",
+                        Url = "https://thunderstore.io/package/download/HeroHanex/NoItemSpawnLimit/1.0.9/",
+                        AltUrl = "https://old.thunderstore.io/package/download/HeroHanex/NoItemSpawnLimit/1.0.9/",
+                        FileName = "HeroHanex-NoItemSpawnLimit-1.0.9.zip", Mode = 1, StripPrefix = "", Folder = "NoItemSpawnLimit",
+                        Required = false, DirectOnly = false, DefaultOff = false },
+                    new ModPackage {
+                        Name = "刷怪/贵重物开关 0.7.3  ← 只刷想刷的", Key = "EnemyAndValuableSpawn", Ns = "soundedsquash", TsName = "Enemy_And_Valuable_Spawn_Manager", MatchKey = "EnemyAndValuableSpawn",
+                        Url = "https://thunderstore.io/package/download/soundedsquash/Enemy_And_Valuable_Spawn_Manager/0.7.3/",
+                        AltUrl = "https://old.thunderstore.io/package/download/soundedsquash/Enemy_And_Valuable_Spawn_Manager/0.7.3/",
+                        FileName = "soundedsquash-Enemy_And_Valuable_Spawn_Manager-0.7.3.zip", Mode = 1, StripPrefix = "", Folder = "SpawnManager",
+                        Required = false, DirectOnly = false, DefaultOff = false },
+                    new ModPackage {
+                        Name = "每局免费升级 3.0.3  ← 每轮送一次升级", Key = "UpgradeEveryRound", Ns = "SLR", TsName = "UpgradeEveryRoundUpdated", MatchKey = "UpgradeEveryRound",
+                        Url = "https://thunderstore.io/package/download/SLR/UpgradeEveryRoundUpdated/3.0.3/",
+                        AltUrl = "https://old.thunderstore.io/package/download/SLR/UpgradeEveryRoundUpdated/3.0.3/",
+                        FileName = "SLR-UpgradeEveryRoundUpdated-3.0.3.zip", Mode = 1, StripPrefix = "plugins/", Folder = "UpgradeEveryRound",
+                        Required = false, DirectOnly = false, DefaultOff = false },
+                    new ModPackage {
+                        Name = "团队共享升级 1.6.2  ← 升级全队共享", Key = "SharedUpgradesPlus", Ns = "Vippy", TsName = "SharedUpgradesPlus", MatchKey = "SharedUpgradesPlus",
+                        Url = "https://thunderstore.io/package/download/Vippy/SharedUpgradesPlus/1.6.2/",
+                        AltUrl = "https://old.thunderstore.io/package/download/Vippy/SharedUpgradesPlus/1.6.2/",
+                        FileName = "Vippy-SharedUpgradesPlus-1.6.2.zip", Mode = 1, StripPrefix = "", Folder = "SharedUpgradesPlus",
+                        Required = false, DirectOnly = false, DefaultOff = false },
+                    new ModPackage {
+                        Name = "推车自动缩放 0.3.2  ← 东西多也不翻车", Key = "ShrinkCart", Ns = "AngelcoMilk", TsName = "ShrinkCart", MatchKey = "ShrinkCart",
+                        Url = "https://thunderstore.io/package/download/AngelcoMilk/ShrinkCart/0.3.2/",
+                        AltUrl = "https://old.thunderstore.io/package/download/AngelcoMilk/ShrinkCart/0.3.2/",
+                        FileName = "AngelcoMilk-ShrinkCart-0.3.2.zip", Mode = 1, StripPrefix = "", Folder = "ShrinkCart",
+                        Required = false, DirectOnly = false, DefaultOff = false },
+                    new ModPackage {
+                        Name = "20 人联机 1.2.7  ← 作者限制，默认不勾", Key = "MorePlayersSimple", Ns = "cn_xc", TsName = "MorePlayersSimple", MatchKey = "MorePlayersSimple",
+                        Url = "https://thunderstore.io/package/download/cn_xc/MorePlayersSimple/1.2.7/",
+                        AltUrl = "https://old.thunderstore.io/package/download/cn_xc/MorePlayersSimple/1.2.7/",
+                        FileName = "cn_xc-MorePlayersSimple-1.2.7.zip", Mode = 1, StripPrefix = "plugins/", Folder = "MorePlayersSimple",
+                        Required = false, DirectOnly = true, DefaultOff = true },
+                    new ModPackage {
+                        Name = "Ping It 1.3.0  ← 标记物品/队友", Key = "Ping_It", Ns = "Eberk", TsName = "Ping_It", MatchKey = "Ping_It",
+                        Url = "https://thunderstore.io/package/download/Eberk/Ping_It/1.3.0/",
+                        AltUrl = "https://old.thunderstore.io/package/download/Eberk/Ping_It/1.3.0/",
+                        FileName = "Eberk-Ping_It-1.3.0.zip", Mode = 1, StripPrefix = "", Folder = "PingIt",
+                        Required = false, DirectOnly = false, DefaultOff = false },
+                    new ModPackage {
+                        Name = "ReviveAll 1.6.0  ← 团灭一键复活（全员装）", Key = "ReviveAll", Ns = "R_E_P_O_NOOB", TsName = "ReviveAll", MatchKey = "ReviveAll",
+                        Url = "https://thunderstore.io/package/download/R_E_P_O_NOOB/ReviveAll/1.6.0/",
+                        AltUrl = "https://old.thunderstore.io/package/download/R_E_P_O_NOOB/ReviveAll/1.6.0/",
+                        FileName = "R_E_P_O_NOOB-ReviveAll-1.6.0.zip", Mode = 1, StripPrefix = "", Folder = "ReviveAll",
+                        Required = false, DirectOnly = false, DefaultOff = false },
+                    new ModPackage {
+                        Name = "MapVotePlusPlus 1.0.1  ← 地图投票", Key = "MapVotePlusPlus", Ns = "RoryDotGG", TsName = "MapVotePlusPlus", MatchKey = "MapVotePlusPlus",
+                        Url = "https://thunderstore.io/package/download/RoryDotGG/MapVotePlusPlus/1.0.1/",
+                        AltUrl = "https://old.thunderstore.io/package/download/RoryDotGG/MapVotePlusPlus/1.0.1/",
+                        FileName = "RoryDotGG-MapVotePlusPlus-1.0.1.zip", Mode = 1, StripPrefix = "", Folder = "MapVotePlusPlus",
+                        Required = false, DirectOnly = false, DefaultOff = false },
+                    new ModPackage {
+                        Name = "REPOFidelity 1.8.2  ← 高清画面", Key = "REPOFidelity", Ns = "Vippy", TsName = "REPOFidelity", MatchKey = "REPOFidelity",
+                        Url = "https://thunderstore.io/package/download/Vippy/REPOFidelity/1.8.2/",
+                        AltUrl = "https://old.thunderstore.io/package/download/Vippy/REPOFidelity/1.8.2/",
+                        FileName = "Vippy-REPOFidelity-1.8.2.zip", Mode = 1, StripPrefix = "", Folder = "REPOFidelity",
+                        Required = false, DirectOnly = false, DefaultOff = false },
+                    new ModPackage {
+                        Name = "Clear UI 0.2.1  ← 高清界面", Key = "ClearUI", Ns = "soundedsquash", TsName = "Clear_UI", MatchKey = "ClearUI",
+                        Url = "https://thunderstore.io/package/download/soundedsquash/Clear_UI/0.2.1/",
+                        AltUrl = "https://old.thunderstore.io/package/download/soundedsquash/Clear_UI/0.2.1/",
+                        FileName = "soundedsquash-Clear_UI-0.2.1.zip", Mode = 1, StripPrefix = "", Folder = "ClearUI",
+                        Required = false, DirectOnly = false, DefaultOff = false },
+                    new ModPackage {
+                        Name = "字体替换 1.3.0  ← 修「口口口口」", Key = "REPOFontChanger", Ns = "ramune1256", TsName = "REPO_FontChanger", MatchKey = "REPOFontChanger",
+                        Url = "https://thunderstore.io/package/download/ramune1256/REPO_FontChanger/1.3.0/",
+                        AltUrl = "https://old.thunderstore.io/package/download/ramune1256/REPO_FontChanger/1.3.0/",
+                        FileName = "ramune1256-REPO_FontChanger-1.3.0.zip", Mode = 1, StripPrefix = "", Folder = "REPOFontChanger",
+                        Required = false, DirectOnly = false, DefaultOff = false },
+                    new ModPackage {
+                        Name = "稳定性补丁 1.1.2  ← 多 mod 同装必备", Key = "REPOCompatibilityPatch", Ns = "DEADTROL", TsName = "REPO_Compatibility_Patch", MatchKey = "REPOCompatibilityPatch",
+                        Url = "https://thunderstore.io/package/download/DEADTROL/REPO_Compatibility_Patch/1.1.2/",
+                        AltUrl = "https://old.thunderstore.io/package/download/DEADTROL/REPO_Compatibility_Patch/1.1.2/",
+                        FileName = "DEADTROL-REPO_Compatibility_Patch-1.1.2.zip", Mode = 2, StripPrefix = "", Folder = null,
+                        Required = false, DirectOnly = false, DefaultOff = false },
+                    new ModPackage {
+                        Name = "Chinese Translation 0.5.101  ← 模组汉化", Key = "ChineseTranslation", Ns = "toored", TsName = "Chinese_Translation", MatchKey = "ChineseTranslation",
+                        Url = "https://thunderstore.io/package/download/toored/Chinese_Translation/0.5.101/",
+                        AltUrl = "https://old.thunderstore.io/package/download/toored/Chinese_Translation/0.5.101/",
+                        FileName = "toored-Chinese_Translation-0.5.101.zip", Mode = 0, StripPrefix = "", Folder = null,
+                        Required = false, DirectOnly = false, DefaultOff = false },
+                };
 
         // ---------- 目录检测 ----------
 
@@ -320,9 +407,13 @@ namespace RepoInstaller
 
         public static int ExtractZip(string zipPath, string gameDir, ModPackage p, Action<string> log)
         {
-            string baseDir = p.Mode == 1
-                ? Path.Combine(gameDir, "BepInEx", "plugins", string.IsNullOrEmpty(p.Folder) ? "Mod" : p.Folder)
-                : gameDir;
+            string baseDir;
+            if (p.Mode == 1)
+                baseDir = Path.Combine(gameDir, "BepInEx", "plugins", string.IsNullOrEmpty(p.Folder) ? "Mod" : p.Folder);
+            else if (p.Mode == 2)
+                baseDir = Path.Combine(gameDir, "BepInEx");   // 包内是 patchers/ plugins/ 这种相对 BepInEx 的布局
+            else
+                baseDir = gameDir;
             Directory.CreateDirectory(baseDir);
             char sep = Path.DirectorySeparatorChar;
             string baseFull = Path.GetFullPath(baseDir).TrimEnd(sep, '/');
@@ -421,7 +512,10 @@ namespace RepoInstaller
 
         private static readonly string[] ManagedPluginDirs =
         {
-            "REPOLib", "WeaponSpawner", "REPOFidelity", "ClearUI",
+            "REPOLib", "MenuLib", "REPOConfig", "ScalerCore", "WeaponSpawner", "NoItemSpawnLimit",
+            "SpawnManager", "UpgradeEveryRound", "SharedUpgradesPlus", "ShrinkCart",
+            "MorePlayersSimple", "PingIt", "ReviveAll", "MapVotePlusPlus",
+            "REPOFidelity", "ClearUI", "REPOFontChanger",
             "XUnity.AutoTranslator", "XUnity.ResourceRedirector"
         };
 

@@ -4,29 +4,41 @@ R.E.P.O. 一键 Mod 安装器 + 云端同步节点。装完进游戏按 **F6** �
 
 ## 架构
 
-| 机器 | 角色 | 说明 |
-|---|---|---|
-| **1 号 VPS** | 网站 | `lucifer.yoga` / `talktact.uno` |
-| **2 号 VPS** | 下载分发 | `dl.lucifer.yoga` —— 本项目的 mod 镜像节点（`/var/www/dl/repomods`） |
-| **3 号 VPS** | 构建机 | 所有 exe 都在这台 `dotnet publish`，不在一号/二号构建 |
-
 ```
-客户端 exe ──① status.json ──▶ 二号节点（状态机）
-           ──② manifest.json ─▶ 二号节点（包清单 + sha256）
-           ──③ 下载 zip ──────▶ 二号节点（国内直连，约 3~5 分钟）
+客户端 exe ──① status.json ──▶ 云端节点（状态机）
+           ──② manifest.json ─▶ 云端节点（包清单 + sha256）
+           ──③ 下载 zip ──────▶ 云端节点（直连，约 3~5 分钟）
                  └─ 云端不可达 ─▶ 回退 Thunderstore 源站
 ```
 
 ## 组件与版本
 
-| Key | 包 | 作用 |
-|---|---|---|
-| `BepInExPack` | BepInExPack 5.4.2305 | 前置框架（必装） |
-| `REPOLib` | REPOLib 4.3.0 | 依赖库 |
-| `WeaponSpawner` | BusiTeam/WeaponSpawner 1.4.1 | 刷物品（F6，房主必装，队友可选） |
-| `REPOFidelity` | Vippy/REPOFidelity 1.8.2 | 高清画面（DLSS/FSR/SMAA、宽屏、FOV） |
-| `ClearUI` | soundedsquash/Clear_UI 0.2.1 | 高清界面 |
-| `ChineseTranslation` | toored/Chinese_Translation | 模组汉化 |
+共 20 个包，全部为 **0.5.0（Unity 6）之后更新** 的版本。
+
+| 分类 | Key | 包 | 作用 |
+|---|---|---|---|
+| 前置 | `BepInExPack` | BepInExPack 5.4.2305 | mod 加载框架（必装） |
+| 前置 | `REPOLib` | REPOLib 4.3.0 | 依赖库 |
+| 前置 | `MenuLib` | MenuLib 2.6.0 | 菜单库，多包依赖 |
+| 前置 | `REPOConfig` | REPOConfig 1.2.7 | 游戏内 mod 设置界面（改键/开关） |
+| 前置 | `ScalerCore` | ScalerCore 1.1.1 | 缩放库，ShrinkCart 依赖 |
+| 刷物品 | `WeaponSpawner` | WeaponSpawner 1.4.1 | F6 刷物品/武器/贵重物 |
+| 刷物品 | `NoItemSpawnLimit` | NoItemSpawnLimit 1.0.9 | 解除卡车物品上限 |
+| 刷物品 | `EnemyAndValuableSpawn` | Enemy & Valuable Spawn Manager 0.7.3 | 刷怪/贵重物开关 |
+| 玩法 | `UpgradeEveryRound` | UpgradeEveryRound 3.0.3 | 每局免费升级 |
+| 玩法 | `SharedUpgradesPlus` | SharedUpgradesPlus 1.6.2 | 升级全队共享 |
+| 玩法 | `ShrinkCart` | ShrinkCart 0.3.2 | 推车自动缩放 |
+| 联机 | `Ping_It` | Ping It 1.3.0 | 标记物品/队友 |
+| 联机 | `ReviveAll` | ReviveAll 1.6.0 | 团灭一键复活（全员装） |
+| 联机 | `MapVotePlusPlus` | MapVotePlusPlus 1.0.1 | 地图投票 |
+| 联机 | `MorePlayersSimple` | MorePlayersSimple 1.2.7 | 20 人联机（**不镜像、默认不勾**，见下） |
+| 画面 | `REPOFidelity` | REPOFidelity 1.8.2 | 高清画面（DLSS/FSR/SMAA、宽屏、FOV） |
+| 画面 | `ClearUI` | Clear UI 0.2.1 | 高清界面 |
+| 画面 | `REPOFontChanger` | Font Changer 1.3.0 | 换字体，修中文「口口口口」 |
+| 稳定 | `REPOCompatibilityPatch` | REPO Compatibility Patch 1.1.2 | 多 mod 同装时的稳定性补丁（含 `patchers/`） |
+| 汉化 | `ChineseTranslation` | Chinese Translation 0.5.101 | 本体 + 100 多个 mod 的汉化 |
+
+> ⚠️ **MorePlayersSimple 不参与镜像**：作者 1.2.7 起改为闭源，明确限制二次分发与整合包使用。因此该包只记录源站直连地址（`mirror: false`），客户端点了才从 Thunderstore 直连下载，且默认不勾选。使用时请保留作者署名 cn_xc 与出处。
 
 ## 状态机
 
@@ -45,7 +57,7 @@ R.E.P.O. 一键 Mod 安装器 + 云端同步节点。装完进游戏按 **F6** �
 - **mod 版本** ← Thunderstore `api/experimental/package/<ns>/<name>/`
 - **只有最新版**：同步时删除同目录旧 zip，客户端安装时清理受管插件目录
 
-## 云端部署（2 号）
+## 云端节点部署
 
 ```bash
 mkdir -p /opt/repomods /var/www/dl/repomods/packages
@@ -61,21 +73,7 @@ python3 /opt/repomods/sync.py        # 首次全量拉取
 - 日志：`/var/log/repomods-sync.log`
 - 对外地址：`https://dl.lucifer.yoga/dl/repomods/status.json`
 
-> 二号是生产下载站：**不要改 `/etc/nginx/sites-enabled/dl.*`、不要重启 nginx**，静态文件丢进 `/var/www/dl/repomods/` 即可，现有 `location ^~ /dl/` 已经覆盖。
-
-## 构建（3 号）
-
-```bash
-# 首次：装 .NET 8 SDK
-curl -sSL https://dot.net/v1/dotnet-install.sh -o di.sh && bash di.sh --channel 8.0 --install-dir /opt/dotnet --no-path
-
-cd src
-/opt/dotnet/dotnet publish -c Release -r win-x64 --self-contained true \
-  -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true \
-  -p:EnableCompressionInSingleFile=true -p:DebugType=none -o ../out
-```
-
-产物：`out/REPO-Mod-Installer.exe`（约 63 MB，自包含，Win10/11 x64 免运行库）。
+> 节点跑在生产下载站上：**不要改 `/etc/nginx/sites-enabled/dl.*`、不要重启 nginx**，静态文件丢进 `/var/www/dl/repomods/` 即可，现有 `location ^~ /dl/` 已经覆盖。
 
 ## 客户端要点
 
