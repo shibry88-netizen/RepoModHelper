@@ -21,6 +21,7 @@ namespace RepoInstaller
         private CancellationTokenSource _cts;
         private bool _busy;
         private string _gameDir = "";
+        private bool _relayAlive = false;
 
         public MainForm()
         {
@@ -68,7 +69,7 @@ namespace RepoInstaller
 
             var lblSub = new Label
             {
-                Text = "刷物品(F6) + 高清画面 + 高清UI + 汉化　|　云端节点 dl.lucifer.yoga 加速下载（国内约 3~5 分钟装完）",
+                Text = "刷物品(F6) + 高清画面 + 高清UI + 汉化　|　云端节点加速 + 中转站转发（网吧/无 VPN 也能快）",
                 ForeColor = Color.Silver,
                 Location = new Point(16, 44),
                 Size = new Size(730, 20)
@@ -307,6 +308,11 @@ namespace RepoInstaller
                     _lblCloud.ForeColor = st.state == "ok" ? Color.FromArgb(120, 220, 200) : Color.FromArgb(240, 190, 110);
                 });
                 Log("云端节点在线：" + st.state + " — " + st.message);
+
+                _relayAlive = await Cloud.RelayAliveAsync(CancellationToken.None);
+                Ui(() => Log(_relayAlive
+                    ? "中转站可用：Thunderstore 下载将经 dl.lucifer.yoga 加速"
+                    : "⚠ 中转站不可用（/relay/healthz 无响应），将直连源站"));
             }
             catch (Exception ex)
             {
@@ -588,23 +594,9 @@ namespace RepoInstaller
                         Ui(() => { if (pct > _bar.Value) _bar.Value = pct; });
                     });
 
-                    try
-                    {
-                        Ui(() => Log("  来源：" + label));
-                        await Core.DownloadAsync(url, dest, prog, s => Ui(() => Log(s)), _cts.Token);
-                        zip = dest;
-                    }
-                    catch (OperationCanceledException) { throw; }
-                    catch (Exception ex1)
-                    {
-                        if (useCloud && !string.IsNullOrEmpty(p.Url))
-                        {
-                            Ui(() => Log("  云端下载失败（" + ex1.Message + "），回退源站…"));
-                            await Core.DownloadAsync(p.Url, dest, prog, s => Ui(() => Log(s)), _cts.Token);
-                            zip = dest;
-                        }
-                        else throw;
-                    }
+                    // 优先经二号中转（国内直连 Thunderstore 慢），失败自动回退直连
+                    await DownloadWithFallbackAsync(url, dest, prog, label);
+                    zip = dest;
                 }
 
                 // 校验 sha256（云端提供）
@@ -615,7 +607,7 @@ namespace RepoInstaller
                     {
                         Ui(() => Log("  ⚠ 校验失败，重新下载该包…"));
                         try { File.Delete(zip); } catch { }
-                        await Core.DownloadAsync(p.Url, zip, new Progress<double>(_ => { }), s => Ui(() => Log(s)), _cts.Token);
+                        await DownloadWithFallbackAsync(p.Url, zip, new Progress<double>(_ => { }), "重试下载");
                     }
                     else Ui(() => Log("  ✔ sha256 校验通过"));
                 }
@@ -653,6 +645,35 @@ namespace RepoInstaller
             Info("安装完成！\n\n1) 从 Steam 启动 R.E.P.O.\n2) 进关卡后按 F6 打开刷物品菜单\n\n" +
                  "数据源：" + (manifest != null ? "云端节点 dl.lucifer.yoga" : "Thunderstore 直连") +
                  "\n本次安装的均为最新版，旧版已清理。", "完成");
+        }
+
+
+        /// <summary>下载：优先经二号中转，失败回退 Thunderstore 直连</summary>
+        private async Task DownloadWithFallbackAsync(string url, string dest, IProgress<double> prog, string label)
+        {
+            string relay = Cloud.RelayUrl(url);
+            var attempts = new List<(string u, string lab)>();
+            if (relay != null && _relayAlive)
+                attempts.Add((relay, label + " · 经二号中转"));
+            attempts.Add((url, label + " · 直连源站"));
+
+            Exception last = null;
+            foreach (var a in attempts)
+            {
+                try
+                {
+                    Ui(() => Log("  来源：" + a.lab));
+                    await Core.DownloadAsync(a.u, dest, prog, x => Ui(() => Log(x)), _cts.Token);
+                    return;
+                }
+                catch (OperationCanceledException) { throw; }
+                catch (Exception ex)
+                {
+                    last = ex;
+                    Ui(() => Log("  该来源失败：" + ex.Message));
+                }
+            }
+            throw last ?? new Exception("下载失败");
         }
 
         private void TryWriteLogFile()

@@ -437,7 +437,7 @@ namespace RepoInstaller
                     string rel = name.Replace('/', sep).TrimEnd(sep);
                     if (rel.Length == 0) { if (isDir) Directory.CreateDirectory(baseFull); continue; }
                     // 过滤包根目录的说明/图标等元数据，避免丢进游戏根目录
-                    if (p.Mode == 0 && string.IsNullOrEmpty(p.StripPrefix) && !name.Contains("/"))
+                    if ((p.Mode == 0 || p.Mode == 2) && string.IsNullOrEmpty(p.StripPrefix) && !name.Contains("/"))
                     {
                         string lower = rel.ToLowerInvariant();
                         if (lower == "manifest.json" || lower == "icon.png" || lower == "readme.md" ||

@@ -47,6 +47,7 @@ namespace RepoInstaller
     internal static class Cloud
     {
         public const string Base = "https://dl.lucifer.yoga/dl/repomods/";
+        public const string Root = "https://dl.lucifer.yoga/";
 
         private static readonly JsonSerializerOptions Opts = new JsonSerializerOptions
         {
@@ -86,5 +87,33 @@ namespace RepoInstaller
                 return m;
             }
         }
+
+        /// <summary>把 Thunderstore 直链改写成“经二号中转”的地址；非 Thunderstore 返回 null</summary>
+        public static string RelayUrl(string url)
+        {
+            if (string.IsNullOrEmpty(url)) return null;
+            foreach (var host in new[] { "https://thunderstore.io/", "http://thunderstore.io/" })
+                if (url.StartsWith(host, StringComparison.OrdinalIgnoreCase))
+                    return Root + "relay/ts/" + url.Substring(host.Length);
+            foreach (var host in new[] { "https://ccdn.thunderstore.io/", "http://ccdn.thunderstore.io/" })
+                if (url.StartsWith(host, StringComparison.OrdinalIgnoreCase))
+                    return Root + "relay/cdn/" + url.Substring(host.Length);
+            return null;
+        }
+
+        /// <summary>中转站健康检查（失败不影响主流程）</summary>
+        public static async Task<bool> RelayAliveAsync(CancellationToken ct)
+        {
+            try
+            {
+                using (var http = NewClient(6))
+                {
+                    string body = await http.GetStringAsync(Root + "relay/healthz", ct).ConfigureAwait(false);
+                    return body != null && body.Contains("ok");
+                }
+            }
+            catch { return false; }
+        }
+
     }
 }

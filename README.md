@@ -40,6 +40,25 @@ R.E.P.O. 一键 Mod 安装器 + 云端同步节点。装完进游戏按 **F6** �
 
 > ⚠️ **MorePlayersSimple 不参与镜像**：作者 1.2.7 起改为闭源，明确限制二次分发与整合包使用。因此该包只记录源站直连地址（`mirror: false`），客户端点了才从 Thunderstore 直连下载，且默认不勾选。使用时请保留作者署名 cn_xc 与出处。
 
+## 中转站（relay）
+
+国内 / 网吧无 VPN 时，Thunderstore 直连很慢。二号提供按需中转：
+
+| 原始地址 | 中转地址 |
+|---|---|
+| `https://thunderstore.io/package/download/<ns>/<name>/<ver>/` | `https://dl.lucifer.yoga/relay/ts/package/download/...` |
+| `https://ccdn.thunderstore.io/live/repository/packages/<file>.zip` | `https://dl.lucifer.yoga/relay/cdn/live/repository/packages/...` |
+
+- 客户端自动改写：有中转就走中转，失败回退直连（日志会写来源）
+- 上游 302 到 CDN 时用 `proxy_redirect` 改写成本机 `/relay/cdn/`，客户端只需跟一次跳转
+- 只放行 Thunderstore 下载路径，其余 403（不是开放代理）
+- `proxy_buffering off` + `proxy_max_temp_file_size 0`，156MB 的包直接流式转发不落盘
+- 支持 Range（断点续传，206）
+- 配置在 `server/nginx/relay.conf`，被 `dl.lucifer.yoga` 的 443 server 块 include
+- 健康检查：`GET /relay/healthz` → `relay ok`
+
+实测（2026-11-01）：经中转 3.33 MB/s，直连源站 3.51 MB/s，损耗约 5%，VPS load 0.00。
+
 ## 状态机
 
 云端每轮同步会写出 `status.json`，客户端按 `state` 走不同分支：
