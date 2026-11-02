@@ -14,7 +14,7 @@ R.E.P.O. 一键 Mod 安装器 + 云端同步节点。装完进游戏按 **F6** �
 
 ## 组件与版本
 
-共 20 个包，全部为 **0.5.0（Unity 6）之后更新** 的版本。
+共 13 个包，全部为 **0.5.0（Unity 6）之后更新** 的版本。
 
 | 分类 | Key | 包 | 作用 |
 |---|---|---|---|
@@ -22,16 +22,9 @@ R.E.P.O. 一键 Mod 安装器 + 云端同步节点。装完进游戏按 **F6** �
 | 前置 | `REPOLib` | REPOLib 4.3.0 | 依赖库 |
 | 前置 | `MenuLib` | MenuLib 2.6.0 | 菜单库，多包依赖 |
 | 前置 | `REPOConfig` | REPOConfig 1.2.7 | 游戏内 mod 设置界面（改键/开关） |
-| 前置 | `ScalerCore` | ScalerCore 1.1.1 | 缩放库，ShrinkCart 依赖 |
 | 刷物品 | `WeaponSpawner` | WeaponSpawner 1.4.1 | F6 刷物品/武器/贵重物 |
 | 刷物品 | `NoItemSpawnLimit` | NoItemSpawnLimit 1.0.9 | 解除卡车物品上限 |
 | 刷物品 | `EnemyAndValuableSpawn` | Enemy & Valuable Spawn Manager 0.7.3 | 刷怪/贵重物开关 |
-| 玩法 | `UpgradeEveryRound` | UpgradeEveryRound 3.0.3 | 每局免费升级 |
-| 玩法 | `SharedUpgradesPlus` | SharedUpgradesPlus 1.6.2 | 升级全队共享 |
-| 玩法 | `ShrinkCart` | ShrinkCart 0.3.2 | 推车自动缩放 |
-| 联机 | `Ping_It` | Ping It 1.3.0 | 标记物品/队友 |
-| 联机 | `ReviveAll` | ReviveAll 1.6.0 | 团灭一键复活（全员装） |
-| 联机 | `MapVotePlusPlus` | MapVotePlusPlus 1.0.1 | 地图投票 |
 | 联机 | `MorePlayersSimple` | MorePlayersSimple 1.2.7 | 20 人联机（**不镜像、默认不勾**，见下） |
 | 画面 | `REPOFidelity` | REPOFidelity 1.8.2 | 高清画面（DLSS/FSR/SMAA、宽屏、FOV） |
 | 画面 | `ClearUI` | Clear UI 0.2.1 | 高清界面 |

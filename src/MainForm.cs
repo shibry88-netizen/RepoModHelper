@@ -25,7 +25,7 @@ namespace RepoInstaller
 
         public MainForm()
         {
-            Text = "R.E.P.O. 一键 Mod 安装器 v2.2（云端镜像 + 中转加速 · 适配 0.5.x）";
+            Text = "R.E.P.O. 一键 Mod 安装器 v2.3（云端镜像 + 中转加速 · 适配 0.5.x）";
             ClientSize = new Size(760, 690);
             StartPosition = FormStartPosition.CenterScreen;
             FormBorderStyle = FormBorderStyle.FixedSingle;

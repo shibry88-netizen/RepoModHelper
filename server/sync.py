@@ -42,19 +42,12 @@ PACKAGES = [
     {"key": "REPOLib",               "ns": "Zehs",             "name": "REPOLib"},
     {"key": "MenuLib",               "ns": "REPOModding",      "name": "MenuLib"},
     {"key": "REPOConfig",            "ns": "REPOModding",      "name": "REPOConfig"},
-    {"key": "ScalerCore",            "ns": "Vippy",            "name": "ScalerCore"},
     # --- 刷物品 / 玩法 ---
     {"key": "WeaponSpawner",         "ns": "BusiTeam",         "name": "WeaponSpawner"},
     {"key": "NoItemSpawnLimit",      "ns": "HeroHanex",        "name": "NoItemSpawnLimit"},
     {"key": "EnemyAndValuableSpawn", "ns": "soundedsquash",    "name": "Enemy_And_Valuable_Spawn_Manager"},
-    {"key": "UpgradeEveryRound",     "ns": "SLR",              "name": "UpgradeEveryRoundUpdated"},
-    {"key": "SharedUpgradesPlus",    "ns": "Vippy",            "name": "SharedUpgradesPlus"},
-    {"key": "ShrinkCart",            "ns": "AngelcoMilk",      "name": "ShrinkCart"},
     # --- 联机体验 ---
     {"key": "MorePlayersSimple",     "ns": "cn_xc",            "name": "MorePlayersSimple", "mirror": False},
-    {"key": "Ping_It",               "ns": "Eberk",            "name": "Ping_It"},
-    {"key": "ReviveAll",             "ns": "R_E_P_O_NOOB",     "name": "ReviveAll"},
-    {"key": "MapVotePlusPlus",       "ns": "RoryDotGG",        "name": "MapVotePlusPlus"},
     # --- 画面 / 稳定性 / 汉化 ---
     {"key": "REPOCompatibilityPatch","ns": "DEADTROL",         "name": "REPO_Compatibility_Patch"},
     {"key": "REPOFidelity",          "ns": "Vippy",            "name": "REPOFidelity"},

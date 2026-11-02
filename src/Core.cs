@@ -83,12 +83,6 @@ namespace RepoInstaller
                         FileName = "REPOModding-REPOConfig-1.2.7.zip", Mode = 1, StripPrefix = "", Folder = "REPOConfig",
                         Required = false, DirectOnly = false, DefaultOff = false },
                     new ModPackage {
-                        Name = "ScalerCore 1.1.1  ← 缩放库（ShrinkCart 依赖）", Key = "ScalerCore", Ns = "Vippy", TsName = "ScalerCore", MatchKey = "ScalerCore",
-                        Url = "https://thunderstore.io/package/download/Vippy/ScalerCore/1.1.1/",
-                        AltUrl = "https://old.thunderstore.io/package/download/Vippy/ScalerCore/1.1.1/",
-                        FileName = "Vippy-ScalerCore-1.1.1.zip", Mode = 1, StripPrefix = "", Folder = "ScalerCore",
-                        Required = false, DirectOnly = false, DefaultOff = false },
-                    new ModPackage {
                         Name = "WeaponSpawner 1.4.1  ← 刷物品（F6）", Key = "WeaponSpawner", Ns = "BusiTeam", TsName = "WeaponSpawner", MatchKey = "WeaponSpawner",
                         Url = "https://thunderstore.io/package/download/BusiTeam/WeaponSpawner/1.4.1/",
                         AltUrl = "https://old.thunderstore.io/package/download/BusiTeam/WeaponSpawner/1.4.1/",
@@ -107,47 +101,11 @@ namespace RepoInstaller
                         FileName = "soundedsquash-Enemy_And_Valuable_Spawn_Manager-0.7.3.zip", Mode = 1, StripPrefix = "", Folder = "SpawnManager",
                         Required = false, DirectOnly = false, DefaultOff = false },
                     new ModPackage {
-                        Name = "每局免费升级 3.0.3  ← 每轮送一次升级", Key = "UpgradeEveryRound", Ns = "SLR", TsName = "UpgradeEveryRoundUpdated", MatchKey = "UpgradeEveryRound",
-                        Url = "https://thunderstore.io/package/download/SLR/UpgradeEveryRoundUpdated/3.0.3/",
-                        AltUrl = "https://old.thunderstore.io/package/download/SLR/UpgradeEveryRoundUpdated/3.0.3/",
-                        FileName = "SLR-UpgradeEveryRoundUpdated-3.0.3.zip", Mode = 1, StripPrefix = "plugins/", Folder = "UpgradeEveryRound",
-                        Required = false, DirectOnly = false, DefaultOff = false },
-                    new ModPackage {
-                        Name = "团队共享升级 1.6.2  ← 升级全队共享", Key = "SharedUpgradesPlus", Ns = "Vippy", TsName = "SharedUpgradesPlus", MatchKey = "SharedUpgradesPlus",
-                        Url = "https://thunderstore.io/package/download/Vippy/SharedUpgradesPlus/1.6.2/",
-                        AltUrl = "https://old.thunderstore.io/package/download/Vippy/SharedUpgradesPlus/1.6.2/",
-                        FileName = "Vippy-SharedUpgradesPlus-1.6.2.zip", Mode = 1, StripPrefix = "", Folder = "SharedUpgradesPlus",
-                        Required = false, DirectOnly = false, DefaultOff = false },
-                    new ModPackage {
-                        Name = "推车自动缩放 0.3.2  ← 东西多也不翻车", Key = "ShrinkCart", Ns = "AngelcoMilk", TsName = "ShrinkCart", MatchKey = "ShrinkCart",
-                        Url = "https://thunderstore.io/package/download/AngelcoMilk/ShrinkCart/0.3.2/",
-                        AltUrl = "https://old.thunderstore.io/package/download/AngelcoMilk/ShrinkCart/0.3.2/",
-                        FileName = "AngelcoMilk-ShrinkCart-0.3.2.zip", Mode = 1, StripPrefix = "", Folder = "ShrinkCart",
-                        Required = false, DirectOnly = false, DefaultOff = false },
-                    new ModPackage {
                         Name = "20 人联机 1.2.7  ← 作者限制，默认不勾", Key = "MorePlayersSimple", Ns = "cn_xc", TsName = "MorePlayersSimple", MatchKey = "MorePlayersSimple",
                         Url = "https://thunderstore.io/package/download/cn_xc/MorePlayersSimple/1.2.7/",
                         AltUrl = "https://old.thunderstore.io/package/download/cn_xc/MorePlayersSimple/1.2.7/",
                         FileName = "cn_xc-MorePlayersSimple-1.2.7.zip", Mode = 1, StripPrefix = "plugins/", Folder = "MorePlayersSimple",
                         Required = false, DirectOnly = true, DefaultOff = true },
-                    new ModPackage {
-                        Name = "Ping It 1.3.0  ← 标记物品/队友", Key = "Ping_It", Ns = "Eberk", TsName = "Ping_It", MatchKey = "Ping_It",
-                        Url = "https://thunderstore.io/package/download/Eberk/Ping_It/1.3.0/",
-                        AltUrl = "https://old.thunderstore.io/package/download/Eberk/Ping_It/1.3.0/",
-                        FileName = "Eberk-Ping_It-1.3.0.zip", Mode = 1, StripPrefix = "", Folder = "PingIt",
-                        Required = false, DirectOnly = false, DefaultOff = false },
-                    new ModPackage {
-                        Name = "ReviveAll 1.6.0  ← 团灭一键复活（全员装）", Key = "ReviveAll", Ns = "R_E_P_O_NOOB", TsName = "ReviveAll", MatchKey = "ReviveAll",
-                        Url = "https://thunderstore.io/package/download/R_E_P_O_NOOB/ReviveAll/1.6.0/",
-                        AltUrl = "https://old.thunderstore.io/package/download/R_E_P_O_NOOB/ReviveAll/1.6.0/",
-                        FileName = "R_E_P_O_NOOB-ReviveAll-1.6.0.zip", Mode = 1, StripPrefix = "", Folder = "ReviveAll",
-                        Required = false, DirectOnly = false, DefaultOff = false },
-                    new ModPackage {
-                        Name = "MapVotePlusPlus 1.0.1  ← 地图投票", Key = "MapVotePlusPlus", Ns = "RoryDotGG", TsName = "MapVotePlusPlus", MatchKey = "MapVotePlusPlus",
-                        Url = "https://thunderstore.io/package/download/RoryDotGG/MapVotePlusPlus/1.0.1/",
-                        AltUrl = "https://old.thunderstore.io/package/download/RoryDotGG/MapVotePlusPlus/1.0.1/",
-                        FileName = "RoryDotGG-MapVotePlusPlus-1.0.1.zip", Mode = 1, StripPrefix = "", Folder = "MapVotePlusPlus",
-                        Required = false, DirectOnly = false, DefaultOff = false },
                     new ModPackage {
                         Name = "REPOFidelity 1.8.2  ← 高清画面", Key = "REPOFidelity", Ns = "Vippy", TsName = "REPOFidelity", MatchKey = "REPOFidelity",
                         Url = "https://thunderstore.io/package/download/Vippy/REPOFidelity/1.8.2/",
@@ -512,10 +470,8 @@ namespace RepoInstaller
 
         private static readonly string[] ManagedPluginDirs =
         {
-            "REPOLib", "MenuLib", "REPOConfig", "ScalerCore", "WeaponSpawner", "NoItemSpawnLimit",
-            "SpawnManager", "UpgradeEveryRound", "SharedUpgradesPlus", "ShrinkCart",
-            "MorePlayersSimple", "PingIt", "ReviveAll", "MapVotePlusPlus",
-            "REPOFidelity", "ClearUI", "REPOFontChanger",
+            "REPOLib", "MenuLib", "REPOConfig", "WeaponSpawner", "NoItemSpawnLimit",
+            "SpawnManager",             "MorePlayersSimple",             "REPOFidelity", "ClearUI", "REPOFontChanger",
             "XUnity.AutoTranslator", "XUnity.ResourceRedirector"
         };
 
