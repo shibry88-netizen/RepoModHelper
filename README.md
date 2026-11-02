@@ -8,7 +8,8 @@ R.E.P.O. 一键 Mod 安装器 + 云端同步节点。装完进游戏按 **F6** �
 客户端 exe ──① status.json ──▶ 云端节点（状态机）
            ──② manifest.json ─▶ 云端节点（包清单 + sha256）
            ──③ 下载 zip ──────▶ 云端节点（直连，约 3~5 分钟）
-                 └─ 云端不可达 ─▶ 回退 Thunderstore 源站
+                 ├─ 需要源站文件 ─▶ 二号 /relay/ 中转（Thunderstore 反代）
+                 └─ 云端不可达 ─▶ 回退源站，仍优先走中转
 ```
 
 ## 组件与版本
@@ -58,6 +59,9 @@ R.E.P.O. 一键 Mod 安装器 + 云端同步节点。装完进游戏按 **F6** �
 - 健康检查：`GET /relay/healthz` → `relay ok`
 
 实测（2026-11-01）：经中转 3.33 MB/s，直连源站 3.51 MB/s，损耗约 5%，VPS load 0.00。
+
+- 复测（2026-11-02）：经中转 20 秒持续下载 **3.17 MB/s**；`Range: bytes=0-1023` 返回 `206`；越权路径 `/relay/cdn/foo.txt`、`/relay/ts/api/...` 均 `403`。
+- ⚠️ 改 `relay.conf` 后必须 `nginx -t` 再 `systemctl reload nginx`（用 reload，不要 restart）。
 
 ## 状态机
 
