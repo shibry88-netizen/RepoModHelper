@@ -14,7 +14,7 @@ R.E.P.O. 一键 Mod 安装器 + 云端同步节点。装完进游戏按 **F6** �
 
 ## 组件与版本
 
-共 13 个包，全部为 **0.5.0（Unity 6）之后更新** 的版本。
+共 14 个包，全部为 **0.5.0（Unity 6）之后更新** 的版本。
 
 | 分类 | Key | 包 | 作用 |
 |---|---|---|---|
@@ -25,6 +25,7 @@ R.E.P.O. 一键 Mod 安装器 + 云端同步节点。装完进游戏按 **F6** �
 | 刷物品 | `WeaponSpawner` | WeaponSpawner 1.4.1 | F6 刷物品/武器/贵重物 |
 | 刷物品 | `NoItemSpawnLimit` | NoItemSpawnLimit 1.0.9 | 解除卡车物品上限 |
 | 刷物品 | `EnemyAndValuableSpawn` | Enemy & Valuable Spawn Manager 0.7.3 | 刷怪/贵重物开关 |
+| 外观 | `UnlockAllCosmetics` | UnlockAllCosmetics 1.0.5 | 解锁全部 557 个皮肤（F7 手动触发），纯客户端 |
 | 联机 | `MorePlayersSimple` | MorePlayersSimple 1.2.7 | 20 人联机（**不镜像、默认不勾**，见下） |
 | 画面 | `REPOFidelity` | REPOFidelity 1.8.2 | 高清画面（DLSS/FSR/SMAA、宽屏、FOV） |
 | 画面 | `ClearUI` | Clear UI 0.2.1 | 高清界面 |

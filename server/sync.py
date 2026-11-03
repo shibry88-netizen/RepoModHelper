@@ -46,6 +46,7 @@ PACKAGES = [
     {"key": "WeaponSpawner",         "ns": "BusiTeam",         "name": "WeaponSpawner"},
     {"key": "NoItemSpawnLimit",      "ns": "HeroHanex",        "name": "NoItemSpawnLimit"},
     {"key": "EnemyAndValuableSpawn", "ns": "soundedsquash",    "name": "Enemy_And_Valuable_Spawn_Manager"},
+    {"key": "UnlockAllCosmetics",    "ns": "UnlockAllCosmetics", "name": "UnlockAllCosmetics"},
     # --- 联机体验 ---
     {"key": "MorePlayersSimple",     "ns": "cn_xc",            "name": "MorePlayersSimple", "mirror": False},
     # --- 画面 / 稳定性 / 汉化 ---
@@ -297,15 +298,31 @@ def main():
     else:
         packages = [old_pkgs[p["key"]] for p in PACKAGES if p["key"] in old_pkgs]
 
+    # 4.5) 生成公告：与上一次清单比对
+    old_map = {p["key"]: p for p in (manifest.get("packages") or [])}
+    new_map = {p["key"]: p for p in packages}
+    added = [{"key": k, "version": new_map[k].get("version", "")} for k in new_map if k not in old_map]
+    removed = [{"key": k, "version": old_map[k].get("version", "")} for k in old_map if k not in new_map]
+    updated = [{"key": k, "from": old_map[k].get("version", ""), "to": new_map[k].get("version", "")}
+               for k in new_map if k in old_map and old_map[k].get("version") != new_map[k].get("version")]
+
+    announcement = manifest.get("announcement")
+    if old_map and (added or removed or updated):
+        now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        announcement = {"id": now, "created_at": now, "title": "云端 Mod 名单已更新",
+                        "added": added, "removed": removed, "updated": updated}
+        log("公告已生成：新增 %d / 移除 %d / 更新 %d" % (len(added), len(removed), len(updated)))
+
     # 5) 写 manifest
     new_manifest = {
-        "schema": 2,
+        "schema": 3,
         "game": "R.E.P.O.",
         "appid": APPID,
         "game_version": game_ver,
         "game_updated_at": (game or {}).get("date", manifest.get("game_updated_at", "")),
         "synced_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "packages": packages,
+        "announcement": announcement,
     }
     write_json(MANIFEST, new_manifest)
 

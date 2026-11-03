@@ -23,6 +23,7 @@ namespace RepoInstaller
         public string game_version { get; set; }
         public string synced_at { get; set; }
         public List<CloudPackage> packages { get; set; } = new List<CloudPackage>();
+        public Announcement announcement { get; set; }
 
         public CloudPackage Find(string key)
         {

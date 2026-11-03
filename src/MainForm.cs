@@ -22,10 +22,14 @@ namespace RepoInstaller
         private bool _busy;
         private string _gameDir = "";
         private bool _relayAlive = false;
+        private CloudManifest _manifestCache;
+        private Dictionary<string, string> _installedMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private CheckBox _chkShowAll;
+        private bool _showInstalled = false;
 
         public MainForm()
         {
-            Text = "R.E.P.O. 一键 Mod 安装器 v2.3（云端镜像 + 中转加速 · 适配 0.5.x）";
+            Text = "R.E.P.O. 一键 Mod 安装器 v2.4（云端镜像 + 中转加速 · 自动检测 · 适配 0.5.x）";
             ClientSize = new Size(760, 690);
             StartPosition = FormStartPosition.CenterScreen;
             FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -39,6 +43,7 @@ namespace RepoInstaller
             {
                 await AutoDetectAsync();
                 await ProbeCloudAsync();
+                await StartupChecksAsync();
             };
         }
 
@@ -152,10 +157,19 @@ namespace RepoInstaller
             _lblCloud = new Label
             {
                 Text = "云端：检测中…",
-                Location = new Point(16, 398),
-                Size = new Size(728, 20),
+                Location = new Point(16, 396),
+                Size = new Size(496, 20),
                 ForeColor = Color.FromArgb(120, 220, 200)
             };
+
+            _chkShowAll = new CheckBox
+            {
+                Text = "显示已安装的模组",
+                Location = new Point(520, 392),
+                Size = new Size(224, 24),
+                ForeColor = Color.Gainsboro
+            };
+            _chkShowAll.CheckedChanged += (o, ev) => { _showInstalled = _chkShowAll.Checked; RefreshPackageList(); };
 
             _bar = new ProgressBar
             {
@@ -210,7 +224,7 @@ namespace RepoInstaller
 
             Controls.AddRange(new Control[]
             {
-                lblTitle, lblSub, grpDir, grpMods, _lblCloud, _bar, _lblStatus, _log,
+                lblTitle, lblSub, grpDir, grpMods, _lblCloud, _chkShowAll, _bar, _lblStatus, _log,
                 _btnInstall, _btnUninstall, _btnOpen, btnCopy, btnQuit
             });
 
@@ -562,8 +576,22 @@ namespace RepoInstaller
                     Log("→ " + p.Name);
                 });
 
-                string zip = Core.FindUsableZip(cache, p);
-                string expectSha = null;
+                var cp = useCloud ? manifest?.Find(p.Key) : null;
+                string cacheName = (cp != null && !string.IsNullOrEmpty(cp.file)) ? cp.file : p.FileName;
+                string expectSha = cp?.sha256;
+
+                // 云端给了 sha256 就必须哈希一致才复用缓存，避免装回旧版本
+                string zip = null;
+                if (!string.IsNullOrEmpty(expectSha))
+                {
+                    string cand = Path.Combine(cache, cacheName);
+                    if (File.Exists(cand) && string.Equals(Core.Sha256Of(cand), expectSha, StringComparison.OrdinalIgnoreCase))
+                        zip = cand;
+                }
+                else
+                {
+                    zip = Core.FindUsableZip(cache, p);
+                }
 
                 if (zip != null)
                 {
@@ -571,11 +599,10 @@ namespace RepoInstaller
                 }
                 else
                 {
-                    string dest = Path.Combine(cache, p.FileName);
+                    string dest = Path.Combine(cache, cacheName);
                     string url;
                     string label;
 
-                    var cp = useCloud ? manifest?.Find(p.Key) : null;
                     if (cp != null && !string.IsNullOrEmpty(cp.url))
                     {
                         url = cp.url;
@@ -622,6 +649,15 @@ namespace RepoInstaller
 
             await Task.Run(() => Core.TrimCache(cache, usedFiles, s => Ui(() => Log(s))));
 
+            // 记录已安装版本（供下次启动的“已安装/未安装”检测）
+            var rec = new List<KeyValuePair<string, string>>();
+            foreach (var p in list)
+            {
+                var cpv = useCloud ? manifest?.Find(p.Key) : null;
+                rec.Add(new KeyValuePair<string, string>(p.Key, cpv?.version ?? ""));
+            }
+            await Task.Run(() => Core.RecordInstalled(dir, rec));
+
             // ---- E. 校验 ----
             Ui(() => SetStatus("校验安装结果…"));
             bool hasBep = File.Exists(Path.Combine(dir, "BepInEx", "core", "BepInEx.dll"));
@@ -641,6 +677,8 @@ namespace RepoInstaller
                 _bar.Value = 100;
                 SetStatus("安装完成 ✔");
             });
+
+            RefreshPackageList();
 
             Info("安装完成！\n\n1) 从 Steam 启动 R.E.P.O.\n2) 进关卡后按 F6 打开刷物品菜单\n\n" +
                  "数据源：" + (manifest != null ? "云端节点 dl.lucifer.yoga" : "Thunderstore 直连") +
@@ -684,6 +722,116 @@ namespace RepoInstaller
                 File.WriteAllText(Path.Combine(_gameDir, "REPO_Mod_Installer.log"), _log.Text, System.Text.Encoding.UTF8);
             }
             catch { }
+        }
+
+        // ---------- 启动检测：已安装 / 公告 ----------
+
+        private async Task StartupChecksAsync()
+        {
+            RefreshPackageList();
+            try
+            {
+                _manifestCache = await Cloud.ManifestAsync(CancellationToken.None);
+                RefreshPackageList();
+
+                var ann = _manifestCache?.announcement;
+                if (ann != null && !string.IsNullOrEmpty(ann.id))
+                {
+                    var st = ClientState.Load();
+                    if (!string.Equals(st.seenAnnouncement, ann.id, StringComparison.Ordinal))
+                    {
+                        ShowAnnouncementDialog(ann);
+                        st.seenAnnouncement = ann.id;
+                        ClientState.Save(st);
+                        Log("已展示云端公告（id=" + ann.id + "），下次不再重复弹出");
+                    }
+                    else Log("云端名单无新变化（公告已看过）");
+                }
+            }
+            catch (Exception ex) { Log("（名单/公告检查失败：" + ex.Message + "）"); }
+        }
+
+        private string NameOf(string key)
+        {
+            foreach (var p in Core.Packages)
+                if (string.Equals(p.Key, key, StringComparison.OrdinalIgnoreCase))
+                    return p.Name.Split('←')[0].Trim();
+            return key;
+        }
+
+        private void ShowAnnouncementDialog(Announcement a)
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine(string.IsNullOrEmpty(a.title) ? "云端 Mod 名单已更新" : a.title);
+            if (!string.IsNullOrEmpty(a.created_at)) sb.AppendLine("（" + a.created_at + "）");
+            sb.AppendLine();
+
+            if (a.added != null && a.added.Count > 0)
+            {
+                sb.AppendLine("✅ 新增 " + a.added.Count + " 个：");
+                foreach (var i in a.added) sb.AppendLine("   · " + NameOf(i.key) + "  " + i.version);
+                sb.AppendLine();
+            }
+            if (a.removed != null && a.removed.Count > 0)
+            {
+                sb.AppendLine("🗑 移除 " + a.removed.Count + " 个：");
+                foreach (var i in a.removed) sb.AppendLine("   · " + NameOf(i.key));
+                sb.AppendLine();
+            }
+            if (a.updated != null && a.updated.Count > 0)
+            {
+                sb.AppendLine("⬆ 版本更新 " + a.updated.Count + " 个：");
+                foreach (var u in a.updated) sb.AppendLine("   · " + NameOf(u.key) + "  " + u.from + " → " + u.to);
+                sb.AppendLine();
+            }
+            sb.AppendLine("点「一键安装」即可补齐未安装 / 需要更新的模组。");
+
+            Ui(() => MessageBox.Show(this, sb.ToString(), "云端更新公告", MessageBoxButtons.OK, MessageBoxIcon.Information));
+        }
+
+        /// <summary>每次启动与安装后重新检测，默认只显示未安装与可更新的包</summary>
+        private void RefreshPackageList()
+        {
+            _installedMap = Core.ReadInstalledMap(_gameDir);
+            var show = new List<ModPackage>();
+            int installed = 0, outdated = 0, missing = 0;
+
+            foreach (var p in Core.Packages)
+            {
+                string latest = _manifestCache?.Find(p.Key)?.version;
+                string iv;
+                var stt = Core.GetState(_gameDir, p, latest, _installedMap, out iv);
+                p.StatusText = null;
+
+                if (stt == Core.PkgState.Installed)
+                {
+                    installed++;
+                    p.StatusText = "已安装";
+                    if (_showInstalled) show.Add(p);
+                }
+                else if (stt == Core.PkgState.Outdated)
+                {
+                    outdated++;
+                    p.StatusText = "可更新 " + iv + "→" + latest;
+                    show.Add(p);
+                }
+                else
+                {
+                    missing++;
+                    p.StatusText = "未安装";
+                    show.Add(p);
+                }
+            }
+
+            _clb.BeginUpdate();
+            _clb.Items.Clear();
+            foreach (var p in show) _clb.Items.Add(p, !p.DefaultOff);
+            _clb.EndUpdate();
+
+            if (string.IsNullOrEmpty(_gameDir) || !Directory.Exists(_gameDir))
+                _lblStatus.Text = "请先选择游戏目录";
+            else
+                _lblStatus.Text = "已安装 " + installed + " 个 · 可更新 " + outdated + " 个 · 未安装 " + missing + " 个";
         }
 
         // ---------- 卸载 ----------

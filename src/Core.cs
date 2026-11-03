@@ -49,7 +49,10 @@ namespace RepoInstaller
         public bool Required;
         public bool DirectOnly;   // 只从源站下载，不进云端镜像（作者授权限制）
         public bool DefaultOff;   // 列表里默认不勾选
-        public override string ToString() => Name;
+        public string Marker;     // 判定“已安装”的标志文件（相对游戏目录）
+        public string StatusText; // 列表里追加的状态（未安装 / 可更新）
+        public override string ToString() =>
+            string.IsNullOrEmpty(StatusText) ? Name : Name + "   ·" + StatusText;
     }
 
     internal static class Core
@@ -63,79 +66,86 @@ namespace RepoInstaller
                         Url = "https://thunderstore.io/package/download/BepInEx/BepInExPack/5.4.2305/",
                         AltUrl = "https://old.thunderstore.io/package/download/BepInEx/BepInExPack/5.4.2305/",
                         FileName = "BepInEx-BepInExPack-5.4.2305.zip", Mode = 0, StripPrefix = "BepInExPack/", Folder = null,
-                        Required = true, DirectOnly = false, DefaultOff = false },
+                        Marker = "winhttp.dll", Required = true, DirectOnly = false, DefaultOff = false },
                     new ModPackage {
                         Name = "REPOLib 4.3.0  ← 依赖库", Key = "REPOLib", Ns = "Zehs", TsName = "REPOLib", MatchKey = "REPOLib",
                         Url = "https://thunderstore.io/package/download/Zehs/REPOLib/4.3.0/",
                         AltUrl = "https://old.thunderstore.io/package/download/Zehs/REPOLib/4.3.0/",
                         FileName = "Zehs-REPOLib-4.3.0.zip", Mode = 1, StripPrefix = "plugins/", Folder = "REPOLib",
-                        Required = false, DirectOnly = false, DefaultOff = false },
+                        Marker = "BepInEx/plugins/REPOLib/REPOLib.dll", Required = false, DirectOnly = false, DefaultOff = false },
                     new ModPackage {
                         Name = "MenuLib 2.6.0  ← 菜单库（多个 mod 依赖）", Key = "MenuLib", Ns = "REPOModding", TsName = "MenuLib", MatchKey = "MenuLib",
                         Url = "https://thunderstore.io/package/download/REPOModding/MenuLib/2.6.0/",
                         AltUrl = "https://old.thunderstore.io/package/download/REPOModding/MenuLib/2.6.0/",
                         FileName = "REPOModding-MenuLib-2.6.0.zip", Mode = 1, StripPrefix = "", Folder = "MenuLib",
-                        Required = false, DirectOnly = false, DefaultOff = false },
+                        Marker = "BepInEx/plugins/MenuLib/MenuLib.dll", Required = false, DirectOnly = false, DefaultOff = false },
                     new ModPackage {
                         Name = "REPOConfig 1.2.7  ← 游戏内 mod 设置界面", Key = "REPOConfig", Ns = "REPOModding", TsName = "REPOConfig", MatchKey = "REPOConfig",
                         Url = "https://thunderstore.io/package/download/REPOModding/REPOConfig/1.2.7/",
                         AltUrl = "https://old.thunderstore.io/package/download/REPOModding/REPOConfig/1.2.7/",
                         FileName = "REPOModding-REPOConfig-1.2.7.zip", Mode = 1, StripPrefix = "", Folder = "REPOConfig",
-                        Required = false, DirectOnly = false, DefaultOff = false },
+                        Marker = "BepInEx/plugins/REPOConfig/REPOConfig.dll", Required = false, DirectOnly = false, DefaultOff = false },
                     new ModPackage {
                         Name = "WeaponSpawner 1.4.1  ← 刷物品（F6）", Key = "WeaponSpawner", Ns = "BusiTeam", TsName = "WeaponSpawner", MatchKey = "WeaponSpawner",
                         Url = "https://thunderstore.io/package/download/BusiTeam/WeaponSpawner/1.4.1/",
                         AltUrl = "https://old.thunderstore.io/package/download/BusiTeam/WeaponSpawner/1.4.1/",
                         FileName = "BusiTeam-WeaponSpawner-1.4.1.zip", Mode = 1, StripPrefix = "", Folder = "WeaponSpawner",
-                        Required = false, DirectOnly = false, DefaultOff = false },
+                        Marker = "BepInEx/plugins/WeaponSpawner/WeaponSpawner.dll", Required = false, DirectOnly = false, DefaultOff = false },
                     new ModPackage {
                         Name = "NoItemSpawnLimit 1.0.9  ← 解除卡车物品上限", Key = "NoItemSpawnLimit", Ns = "HeroHanex", TsName = "NoItemSpawnLimit", MatchKey = "NoItemSpawnLimit",
                         Url = "https://thunderstore.io/package/download/HeroHanex/NoItemSpawnLimit/1.0.9/",
                         AltUrl = "https://old.thunderstore.io/package/download/HeroHanex/NoItemSpawnLimit/1.0.9/",
                         FileName = "HeroHanex-NoItemSpawnLimit-1.0.9.zip", Mode = 1, StripPrefix = "", Folder = "NoItemSpawnLimit",
-                        Required = false, DirectOnly = false, DefaultOff = false },
+                        Marker = "BepInEx/plugins/NoItemSpawnLimit/NoItemSpawnLimit.dll", Required = false, DirectOnly = false, DefaultOff = false },
                     new ModPackage {
                         Name = "刷怪/贵重物开关 0.7.3  ← 只刷想刷的", Key = "EnemyAndValuableSpawn", Ns = "soundedsquash", TsName = "Enemy_And_Valuable_Spawn_Manager", MatchKey = "EnemyAndValuableSpawn",
                         Url = "https://thunderstore.io/package/download/soundedsquash/Enemy_And_Valuable_Spawn_Manager/0.7.3/",
                         AltUrl = "https://old.thunderstore.io/package/download/soundedsquash/Enemy_And_Valuable_Spawn_Manager/0.7.3/",
                         FileName = "soundedsquash-Enemy_And_Valuable_Spawn_Manager-0.7.3.zip", Mode = 1, StripPrefix = "", Folder = "SpawnManager",
-                        Required = false, DirectOnly = false, DefaultOff = false },
+                        Marker = "BepInEx/plugins/SpawnManager/SpawnManager.dll", Required = false, DirectOnly = false, DefaultOff = false },
                     new ModPackage {
                         Name = "20 人联机 1.2.7  ← 作者限制，默认不勾", Key = "MorePlayersSimple", Ns = "cn_xc", TsName = "MorePlayersSimple", MatchKey = "MorePlayersSimple",
                         Url = "https://thunderstore.io/package/download/cn_xc/MorePlayersSimple/1.2.7/",
                         AltUrl = "https://old.thunderstore.io/package/download/cn_xc/MorePlayersSimple/1.2.7/",
                         FileName = "cn_xc-MorePlayersSimple-1.2.7.zip", Mode = 1, StripPrefix = "plugins/", Folder = "MorePlayersSimple",
-                        Required = false, DirectOnly = true, DefaultOff = true },
+                        Marker = "BepInEx/plugins/MorePlayersSimple/MorePlayersSimple.dll", Required = false, DirectOnly = true, DefaultOff = true },
                     new ModPackage {
                         Name = "REPOFidelity 1.8.2  ← 高清画面", Key = "REPOFidelity", Ns = "Vippy", TsName = "REPOFidelity", MatchKey = "REPOFidelity",
                         Url = "https://thunderstore.io/package/download/Vippy/REPOFidelity/1.8.2/",
                         AltUrl = "https://old.thunderstore.io/package/download/Vippy/REPOFidelity/1.8.2/",
                         FileName = "Vippy-REPOFidelity-1.8.2.zip", Mode = 1, StripPrefix = "", Folder = "REPOFidelity",
-                        Required = false, DirectOnly = false, DefaultOff = false },
+                        Marker = "BepInEx/plugins/REPOFidelity/REPOFidelity.dll", Required = false, DirectOnly = false, DefaultOff = false },
                     new ModPackage {
                         Name = "Clear UI 0.2.1  ← 高清界面", Key = "ClearUI", Ns = "soundedsquash", TsName = "Clear_UI", MatchKey = "ClearUI",
                         Url = "https://thunderstore.io/package/download/soundedsquash/Clear_UI/0.2.1/",
                         AltUrl = "https://old.thunderstore.io/package/download/soundedsquash/Clear_UI/0.2.1/",
                         FileName = "soundedsquash-Clear_UI-0.2.1.zip", Mode = 1, StripPrefix = "", Folder = "ClearUI",
-                        Required = false, DirectOnly = false, DefaultOff = false },
+                        Marker = "BepInEx/plugins/ClearUI/ClearUI.dll", Required = false, DirectOnly = false, DefaultOff = false },
                     new ModPackage {
                         Name = "字体替换 1.3.0  ← 修「口口口口」", Key = "REPOFontChanger", Ns = "ramune1256", TsName = "REPO_FontChanger", MatchKey = "REPOFontChanger",
                         Url = "https://thunderstore.io/package/download/ramune1256/REPO_FontChanger/1.3.0/",
                         AltUrl = "https://old.thunderstore.io/package/download/ramune1256/REPO_FontChanger/1.3.0/",
                         FileName = "ramune1256-REPO_FontChanger-1.3.0.zip", Mode = 1, StripPrefix = "", Folder = "REPOFontChanger",
-                        Required = false, DirectOnly = false, DefaultOff = false },
+                        Marker = "BepInEx/plugins/REPOFontChanger/REPOFontChanger.dll", Required = false, DirectOnly = false, DefaultOff = false },
                     new ModPackage {
                         Name = "稳定性补丁 1.1.2  ← 多 mod 同装必备", Key = "REPOCompatibilityPatch", Ns = "DEADTROL", TsName = "REPO_Compatibility_Patch", MatchKey = "REPOCompatibilityPatch",
                         Url = "https://thunderstore.io/package/download/DEADTROL/REPO_Compatibility_Patch/1.1.2/",
                         AltUrl = "https://old.thunderstore.io/package/download/DEADTROL/REPO_Compatibility_Patch/1.1.2/",
                         FileName = "DEADTROL-REPO_Compatibility_Patch-1.1.2.zip", Mode = 2, StripPrefix = "", Folder = null,
-                        Required = false, DirectOnly = false, DefaultOff = false },
+                        Marker = "BepInEx/plugins/REPOCompatibilityPatch.dll", Required = false, DirectOnly = false, DefaultOff = false },
                     new ModPackage {
                         Name = "Chinese Translation 0.5.101  ← 模组汉化", Key = "ChineseTranslation", Ns = "toored", TsName = "Chinese_Translation", MatchKey = "ChineseTranslation",
                         Url = "https://thunderstore.io/package/download/toored/Chinese_Translation/0.5.101/",
                         AltUrl = "https://old.thunderstore.io/package/download/toored/Chinese_Translation/0.5.101/",
                         FileName = "toored-Chinese_Translation-0.5.101.zip", Mode = 0, StripPrefix = "", Folder = null,
-                        Required = false, DirectOnly = false, DefaultOff = false },
+                        Marker = "BepInEx/plugins/XUnity.AutoTranslator/XUnity.AutoTranslator.Plugin.BepInEx.dll", Required = false, DirectOnly = false, DefaultOff = false },
+            new ModPackage {
+                Name = "解锁全部皮肤 1.0.5  ← F7 解锁 557 个外观", Key = "UnlockAllCosmetics", Ns = "UnlockAllCosmetics", TsName = "UnlockAllCosmetics", MatchKey = "UnlockAllCosmetics",
+                Url = "https://thunderstore.io/package/download/UnlockAllCosmetics/UnlockAllCosmetics/1.0.5/",
+                AltUrl = "https://old.thunderstore.io/package/download/UnlockAllCosmetics/UnlockAllCosmetics/1.0.5/",
+                FileName = "UnlockAllCosmetics-UnlockAllCosmetics-1.0.5.zip", Mode = 1, StripPrefix = "plugins/", Folder = "UnlockAllCosmetics",
+                Marker = "BepInEx/plugins/UnlockAllCosmetics/UnlockAllCosmetics.dll",
+                Required = false, DirectOnly = false, DefaultOff = false },
                 };
 
         // ---------- 目录检测 ----------
@@ -551,6 +561,60 @@ namespace RepoInstaller
                 foreach (var b in hash) sb.Append(b.ToString("x2"));
                 return sb.ToString();
             }
+        }
+
+        // ---------- 已安装检测 ----------
+
+        public enum PkgState { Missing, Installed, Outdated }
+
+        public static string InstalledFile(string gameDir)
+        {
+            return Path.Combine(gameDir, "BepInEx", "repomods-installed.json");
+        }
+
+        public static Dictionary<string, string> ReadInstalledMap(string gameDir)
+        {
+            var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            try
+            {
+                string f = InstalledFile(gameDir);
+                if (File.Exists(f))
+                {
+                    var d = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(f));
+                    if (d != null) foreach (var kv in d) map[kv.Key] = kv.Value;
+                }
+            }
+            catch { }
+            return map;
+        }
+
+        public static void RecordInstalled(string gameDir, IEnumerable<KeyValuePair<string, string>> items)
+        {
+            try
+            {
+                var map = ReadInstalledMap(gameDir);
+                foreach (var kv in items) map[kv.Key] = kv.Value ?? "";
+                string f = InstalledFile(gameDir);
+                Directory.CreateDirectory(Path.GetDirectoryName(f));
+                File.WriteAllText(f, System.Text.Json.JsonSerializer.Serialize(map,
+                    new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+            }
+            catch { }
+        }
+
+        /// <summary>判定包在本机的状态：未安装 / 已安装 / 已安装但版本落后</summary>
+        public static PkgState GetState(string gameDir, ModPackage p, string latestVersion,
+                                        Dictionary<string, string> installedMap, out string installedVersion)
+        {
+            installedVersion = null;
+            if (string.IsNullOrEmpty(gameDir) || !Directory.Exists(gameDir)) return PkgState.Missing;
+            if (string.IsNullOrEmpty(p.Marker) || !File.Exists(Path.Combine(gameDir, p.Marker)))
+                return PkgState.Missing;
+            if (installedMap != null) installedMap.TryGetValue(p.Key, out installedVersion);
+            if (!string.IsNullOrEmpty(latestVersion) && !string.IsNullOrEmpty(installedVersion) &&
+                !string.Equals(installedVersion, latestVersion, StringComparison.OrdinalIgnoreCase))
+                return PkgState.Outdated;
+            return PkgState.Installed;
         }
 
     }
