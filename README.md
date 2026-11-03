@@ -124,7 +124,8 @@ python3 /opt/repomods/sync.py        # 首次全量拉取
 ## 客户端要点
 
 - 自动检测 Steam 库（注册表 + `libraryfolders.vdf` + 全盘常见路径 + 深度 3 浅搜），可手动浏览
-- 安装前备份旧 `BepInEx` → `BepInEx_backup_时间戳`，只保留最近 2 份
+- 安装是**增量**的：只清理并覆盖本次勾选的包，其它已装 mod 原样保留（v2.4.1 修复了「只装一个新 mod 却把旧 mod 全删掉」的问题）
+- 想彻底重来：先点「卸载 / 还原原版」，再重新勾选安装
 - 下载包做 sha256 校验，失败自动重下
 - 卸载：删除 `BepInEx` / `winhttp.dll` / `doorstop_config.ini`，并还原最近备份
 - 离线：首次运行后 exe 旁会生成 `payload/` 缓存，可整目录拷走到无网机器使用

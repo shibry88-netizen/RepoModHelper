@@ -29,7 +29,7 @@ namespace RepoInstaller
 
         public MainForm()
         {
-            Text = "R.E.P.O. 一键 Mod 安装器 v2.4（云端镜像 + 中转加速 · 自动检测 · 适配 0.5.x）";
+            Text = "R.E.P.O. 一键 Mod 安装器 v2.4.2（云端镜像 + 中转加速 · 增量安装 · 适配 0.5.x）";
             ClientSize = new Size(760, 690);
             StartPosition = FormStartPosition.CenterScreen;
             FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -556,9 +556,8 @@ namespace RepoInstaller
 
             // ---- C. 备份 / 清理旧版 ----
             Ui(() => SetStatus("备份原有文件…"));
-            string bak = await Task.Run(() => Core.BackupExisting(dir, s => Ui(() => Log(s))));
-            if (bak != null) await Task.Run(() => Core.RotateBackups(dir, 2, s => Ui(() => Log(s))));
-            else await Task.Run(() => Core.CleanManaged(dir, s => Ui(() => Log(s))));
+            // 增量安装：不再整体重命名/清空 BepInEx，只处理本次勾选的包
+            Ui(() => Log("安装方式：增量（其余已装 mod 原样保留）"));
 
             // ---- D. 逐包下载 + 解压 ----
             int total = list.Count;
@@ -643,7 +642,10 @@ namespace RepoInstaller
 
                 Ui(() => _bar.Value = Math.Min(100, basePct + (int)(85.0 / total)));
                 string zipToUse = zip;
+                await Task.Run(() => Core.PrepareIncremental(dir, p, s => Ui(() => Log(s))));
                 await Task.Run(() => Core.ExtractZip(zipToUse, dir, p, s => Ui(() => Log(s))));
+                if (!Core.MarkerPresent(dir, p))
+                    Ui(() => Log("  ⚠ 解压后未在预期位置找到该 mod，可能被杀软拦截或包结构变化"));
                 Ui(() => _bar.Value = Math.Min(100, (int)Math.Round((i + 1) * 100.0 / total)));
             }
 
