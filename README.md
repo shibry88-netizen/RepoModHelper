@@ -74,6 +74,35 @@ R.E.P.O. 一键 Mod 安装器 + 云端同步节点。装完进游戏按 **F6** �
 - **mod 版本** ← Thunderstore `api/experimental/package/<ns>/<name>/`
 - **只有最新版**：同步时删除同目录旧 zip，客户端安装时清理受管插件目录
 
+## 公告与已安装检测（v2.4）
+
+**云端公告**：每轮同步会把「本次名单相对上一次的变化」写进 `manifest.json` 的 `announcement` 字段：
+
+```json
+"announcement": {
+  "id": "2026-11-03T12:10:39Z",
+  "created_at": "2026-11-03T12:10:39Z",
+  "title": "云端 Mod 名单已更新",
+  "added":   [{"key": "UnlockAllCosmetics", "version": "1.0.5"}],
+  "removed": [],
+  "updated": [{"key": "ChineseTranslation", "from": "0.5.101", "to": "0.5.102"}]
+}
+```
+
+- 客户端启动读 `manifest.json`，把 `announcement.id` 与 `%LOCALAPPDATA%\RepoModHelper\state.json` 里的 `seenAnnouncement` 比对
+- 不一致 → 弹窗列出新增 / 移除 / 更新，用户点确定后记录 id
+- **下次启动若 id 未变就不再弹**；云端有新变化（新 id）才会再提示
+
+**已安装检测**：每个包带一个 `Marker`（标志文件的相对路径），配合 `BepInEx/repomods-installed.json` 记录版本：
+
+| 情况 | 判定 | 列表表现 |
+|---|---|---|
+| 标志文件在 + 版本与云端一致 | 已安装 | 默认隐藏（勾「显示已安装的模组」才出现） |
+| 标志文件在 + 版本落后 | 可更新 | 显示「可更新 1.8.2→1.8.3」 |
+| 标志文件不在 | 未安装 | 显示「未安装」 |
+
+检测在**每次启动**和**每次安装完成**后都会重跑，状态栏显示「已安装 X · 可更新 Y · 未安装 Z」。
+
 ## 云端节点部署
 
 ```bash
