@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
@@ -44,11 +45,107 @@ namespace RepoInstaller
         public string checked_at { get; set; }
     }
 
-    /// <summary>云端节点（二号机 dl.lucifer.yoga）</summary>
+    /// <summary>云端节点（地址由 Nodes 在启动时解析，随云端 nodes.json 变化，无需重新打包）</summary>
     internal static class Cloud
     {
-        public const string Base = "https://dl.lucifer.yoga/dl/repomods/";
-        public const string Root = "https://dl.lucifer.yoga/";
+        private static readonly object _gate = new object();
+        private static Task<string> _init;
+
+        private static string _root = Nodes.DefaultRoot;
+        private static string _base = Nodes.DefaultRoot + "dl/repomods/";
+        private static string _nodeName = "内置默认";
+
+        /// <summary>云端节点根地址（以 / 结尾）</summary>
+        public static string Root { get { return _root; } }
+
+        /// <summary>云端 repomods 目录（以 / 结尾）</summary>
+        public static string Base { get { return _base; } }
+
+        /// <summary>当前选中的节点名（UI 展示用）</summary>
+        public static string NodeName { get { return _nodeName; } }
+
+        /// <summary>
+        /// 解析并探测可用节点，只执行一次。调用后 Base / Root 即指向选中的节点。
+        /// 节点清单来自云端 nodes.json，因此换服务器不需要重新打包。
+        /// </summary>
+        public static Task<string> InitAsync(Action<string> log = null)
+        {
+            lock (_gate)
+            {
+                if (_init == null) _init = InitCoreAsync(log);
+                return _init;
+            }
+        }
+
+        private sealed class NodeProbe
+        {
+            public CloudNode node;
+            public bool ok;
+        }
+
+        private static async Task<string> InitCoreAsync(Action<string> log)
+        {
+            List<CloudNode> nodes;
+            try
+            {
+                nodes = await Nodes.ResolveAsync(log, CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                log?.Invoke("节点清单解析失败：" + ex.Message);
+                nodes = null;
+            }
+
+            if (nodes == null || nodes.Count == 0)
+            {
+                nodes = new List<CloudNode>
+                {
+                    new CloudNode { name = "内置默认", root = Nodes.DefaultRoot, priority = 1000 }
+                };
+            }
+
+            // 并发探测，按 priority 取第一个可用的（总耗时 = 最慢的一个）
+            NodeProbe[] probes = await Task.WhenAll(nodes.Select(async n => new NodeProbe
+            {
+                node = n,
+                ok = await ProbeNodeAsync(n.Root).ConfigureAwait(false)
+            })).ConfigureAwait(false);
+
+            NodeProbe pick = probes.Where(p => p.ok).OrderBy(p => p.node.priority).FirstOrDefault();
+            if (pick != null)
+            {
+                _root = pick.node.Root;
+                _base = pick.node.Root + "dl/repomods/";
+                _nodeName = pick.node.name;
+                log?.Invoke("云端节点：已选用 " + _nodeName + "（" + _root + "）");
+                return _nodeName;
+            }
+
+            foreach (NodeProbe p in probes)
+                log?.Invoke("云端节点：不可达，跳过 " + p.node.name + "（" + p.node.Root + "）");
+
+            _root = Nodes.DefaultRoot;
+            _base = Nodes.DefaultRoot + "dl/repomods/";
+            _nodeName = "内置默认";
+            log?.Invoke("云端节点：全部不可达，回退内置地址 " + Nodes.DefaultRoot);
+            return _nodeName;
+        }
+
+        private static async Task<bool> ProbeNodeAsync(string root)
+        {
+            try
+            {
+                using (var http = NewClient(6))
+                {
+                    string url = root + "dl/repomods/status.json?probe=" +
+                                 DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    string json = await http.GetStringAsync(url).ConfigureAwait(false);
+                    var st = JsonSerializer.Deserialize<CloudStatus>(json, Opts);
+                    return st != null && !string.IsNullOrEmpty(st.state);
+                }
+            }
+            catch { return false; }
+        }
 
         private static readonly JsonSerializerOptions Opts = new JsonSerializerOptions
         {

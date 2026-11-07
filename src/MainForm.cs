@@ -42,6 +42,7 @@ namespace RepoInstaller
             Load += async (s, e) =>
             {
                 await AutoDetectAsync();
+                await ResolveCloudAsync();
                 await ProbeCloudAsync();
                 await StartupChecksAsync();
             };
@@ -310,6 +311,19 @@ namespace RepoInstaller
             SetStatus("已就绪，可以安装");
         }
 
+        private async Task ResolveCloudAsync()
+        {
+            try
+            {
+                string name = await Cloud.InitAsync(msg => Log(msg));
+                Ui(() => _lblCloud.Text = "云端节点：" + name + " · 正在连接…");
+            }
+            catch (Exception ex)
+            {
+                Log("⚠ 节点解析失败，回退内置地址：" + ex.Message);
+            }
+        }
+
         private async Task ProbeCloudAsync()
         {
             try
@@ -325,7 +339,7 @@ namespace RepoInstaller
 
                 _relayAlive = await Cloud.RelayAliveAsync(CancellationToken.None);
                 Ui(() => Log(_relayAlive
-                    ? "中转站可用：Thunderstore 下载将经 dl.lucifer.yoga 加速"
+                    ? "中转站可用：Thunderstore 下载将经 " + Cloud.NodeName + " 加速"
                     : "⚠ 中转站不可用（/relay/healthz 无响应），将直连源站"));
             }
             catch (Exception ex)
@@ -479,7 +493,7 @@ namespace RepoInstaller
             // ---- A. 云端状态机 ----
             try
             {
-                Ui(() => SetStatus("连接云端节点 dl.lucifer.yoga …"));
+                Ui(() => SetStatus("连接云端节点 " + Cloud.NodeName + " …"));
                 var st = await Cloud.StatusAsync(_cts.Token);
                 Ui(() =>
                 {
@@ -683,7 +697,7 @@ namespace RepoInstaller
             RefreshPackageList();
 
             Info("安装完成！\n\n1) 从 Steam 启动 R.E.P.O.\n2) 进关卡后按 F6 打开刷物品菜单\n\n" +
-                 "数据源：" + (manifest != null ? "云端节点 dl.lucifer.yoga" : "Thunderstore 直连") +
+                 "数据源：" + (manifest != null ? "云端节点 " + Cloud.NodeName : "Thunderstore 直连") +
                  "\n本次安装的均为最新版，旧版已清理。", "完成");
         }
 

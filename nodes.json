@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "updated": "2026-11-07T12:10:00Z",
+  "nodes": [
+    {
+      "name": "香港 cognetcloud（主）",
+      "root": "https://dl.lucifer.yoga/",
+      "priority": 10
+    }
+  ]
+}
